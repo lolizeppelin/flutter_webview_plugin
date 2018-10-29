@@ -20,6 +20,7 @@ class WebviewScaffold extends StatefulWidget {
   final bool withLocalStorage;
   final bool withLocalUrl;
   final bool scrollBar;
+  final bool enableMessaging;
 
   final Map<String, String> headers;
 
@@ -39,7 +40,8 @@ class WebviewScaffold extends StatefulWidget {
       this.withZoom,
       this.withLocalStorage,
       this.withLocalUrl,
-      this.scrollBar})
+      this.scrollBar,
+      this.enableMessaging})
       : super(key: key);
 
   @override
@@ -79,7 +81,9 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
           withZoom: widget.withZoom,
           withLocalStorage: widget.withLocalStorage,
           withLocalUrl: widget.withLocalUrl,
-          scrollBar: widget.scrollBar);
+          scrollBar: widget.scrollBar,
+          enableMessaging: widget.enableMessaging,
+      );
     } else {
       final rect = _buildRect(context);
       if (_rect != rect) {
