@@ -82,8 +82,7 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
           withLocalStorage: widget.withLocalStorage,
           withLocalUrl: widget.withLocalUrl,
           scrollBar: widget.scrollBar,
-          enableMessaging: widget.enableMessaging,
-      );
+          enableMessaging: widget.enableMessaging);
     } else {
       final rect = _buildRect(context);
       if (_rect != rect) {
