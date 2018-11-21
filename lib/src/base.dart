@@ -203,16 +203,6 @@ class FlutterWebviewPlugin {
   // Stops current loading process
   Future<Null> stopLoading() async => await _channel.invokeMethod('stopLoading');
 
-  /// adds the plugin as ActivityResultListener
-  /// Only needed and used on Android
-  Future<Null> registerAcitivityResultListener() =>
-      _channel.invokeMethod('registerAcitivityResultListener');
-
-  /// removes the plugin as ActivityResultListener
-  /// Only needed and used on Android
-  Future<Null> removeAcitivityResultListener() =>
-      _channel.invokeMethod('removeAcitivityResultListener');
-
   /// Close all Streams
   void dispose() {
     _onDestroy.close();
