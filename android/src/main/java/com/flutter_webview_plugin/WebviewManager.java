@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
@@ -24,12 +25,6 @@ import io.flutter.plugin.common.MethodChannel;
 
 import static android.app.Activity.RESULT_OK;
 
-import android.webkit.JavascriptInterface;
-import java.net.URLEncoder;
-import java.io.UnsupportedEncodingException;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 /**
  * Created by lejard_h on 20/12/2017.
  */
@@ -38,33 +33,34 @@ class WebviewManager {
 
     private ValueCallback<Uri> mUploadMessage;
     private ValueCallback<Uri[]> mUploadMessageArray;
-    private final static int FILECHOOSER_RESULTCODE = 1;
-    private static final String CHANNEL_NAME = "flutter_webview_plugin";
+    private final static int FILECHOOSER_RESULTCODE=1;
 
     @TargetApi(7)
     class ResultHandler {
-        public boolean handleResult(int requestCode, int resultCode, Intent intent) {
+        public boolean handleResult(int requestCode, int resultCode, Intent intent){
             boolean handled = false;
-            if (Build.VERSION.SDK_INT >= 21) {
-                Uri[] results = null;
-                // check result
-                if (resultCode == Activity.RESULT_OK) {
-                    if (requestCode == FILECHOOSER_RESULTCODE) {
-                        if (mUploadMessageArray != null) {
-                            String dataString = intent.getDataString();
-                            if (dataString != null) {
-                                results = new Uri[] { Uri.parse(dataString) };
-                            }
+            if(Build.VERSION.SDK_INT >= 21){
+                if(requestCode == FILECHOOSER_RESULTCODE){
+                    Uri[] results = null;
+                    if(resultCode == Activity.RESULT_OK && intent != null){
+                        String dataString = intent.getDataString();
+                        if(dataString != null){
+                            results = new Uri[]{ Uri.parse(dataString) };
                         }
-                        handled = true;
                     }
+                    if(mUploadMessageArray != null){
+                        mUploadMessageArray.onReceiveValue(results);
+                        mUploadMessageArray = null;
+                    }
+                    handled = true;
                 }
-                mUploadMessageArray.onReceiveValue(results);
-                mUploadMessageArray = null;
-            } else {
+            }else {
                 if (requestCode == FILECHOOSER_RESULTCODE) {
-                    if (null != mUploadMessage) {
-                        Uri result = intent == null || resultCode != RESULT_OK ? null : intent.getData();
+                	Uri result = null;
+                    if (resultCode == RESULT_OK && intent != null) {
+                        result = intent.getData();
+                    }
+                    if (mUploadMessage != null) {
                         mUploadMessage.onReceiveValue(result);
                         mUploadMessage = null;
                     }
@@ -90,13 +86,13 @@ class WebviewManager {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     switch (keyCode) {
-                    case KeyEvent.KEYCODE_BACK:
-                        if (webView.canGoBack()) {
-                            webView.goBack();
-                        } else {
-                            close();
-                        }
-                        return true;
+                        case KeyEvent.KEYCODE_BACK:
+                            if (webView.canGoBack()) {
+                                webView.goBack();
+                            } else {
+                                close();
+                            }
+                            return true;
                     }
                 }
 
@@ -104,21 +100,22 @@ class WebviewManager {
             }
         });
 
-        ((ObservableWebView) webView).setOnScrollChangedCallback(new ObservableWebView.OnScrollChangedCallback() {
-            public void onScroll(int x, int y, int oldx, int oldy) {
+        ((ObservableWebView) webView).setOnScrollChangedCallback(new ObservableWebView.OnScrollChangedCallback(){
+            public void onScroll(int x, int y, int oldx, int oldy){
                 Map<String, Object> yDirection = new HashMap<>();
-                yDirection.put("yDirection", (double) y);
+                yDirection.put("yDirection", (double)y);
                 FlutterWebviewPlugin.channel.invokeMethod("onScrollYChanged", yDirection);
                 Map<String, Object> xDirection = new HashMap<>();
-                xDirection.put("xDirection", (double) x);
+                xDirection.put("xDirection", (double)x);
                 FlutterWebviewPlugin.channel.invokeMethod("onScrollXChanged", xDirection);
             }
         });
 
         webView.setWebViewClient(webViewClient);
-        webView.setWebChromeClient(new WebChromeClient() {
-            // The undocumented magic method override
-            // Eclipse will swear at you if you try to put @Override here
+        webView.setWebChromeClient(new WebChromeClient()
+        {
+            //The undocumented magic method override
+            //Eclipse will swear at you if you try to put @Override here
             // For Android 3.0+
             public void openFileChooser(ValueCallback<Uri> uploadMsg) {
 
@@ -126,33 +123,36 @@ class WebviewManager {
                 Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
                 i.setType("image/*");
-                activity.startActivityForResult(Intent.createChooser(i, "File Chooser"), FILECHOOSER_RESULTCODE);
+                activity.startActivityForResult(Intent.createChooser(i,"File Chooser"), FILECHOOSER_RESULTCODE);
 
             }
 
             // For Android 3.0+
-            public void openFileChooser(ValueCallback uploadMsg, String acceptType) {
+            public void openFileChooser( ValueCallback uploadMsg, String acceptType ) {
                 mUploadMessage = uploadMsg;
                 Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
                 i.setType("*/*");
-                activity.startActivityForResult(Intent.createChooser(i, "File Browser"), FILECHOOSER_RESULTCODE);
+               activity.startActivityForResult(
+                        Intent.createChooser(i, "File Browser"),
+                        FILECHOOSER_RESULTCODE);
             }
 
-            // For Android 4.1
-            public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
+            //For Android 4.1
+            public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture){
                 mUploadMessage = uploadMsg;
                 Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
                 i.setType("image/*");
-                activity.startActivityForResult(Intent.createChooser(i, "File Chooser"), FILECHOOSER_RESULTCODE);
+                activity.startActivityForResult( Intent.createChooser( i, "File Chooser" ), FILECHOOSER_RESULTCODE );
 
             }
 
-            // For Android 5.0+
-            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback,
-                    FileChooserParams fileChooserParams) {
-                if (mUploadMessageArray != null) {
+            //For Android 5.0+
+            public boolean onShowFileChooser(
+                    WebView webView, ValueCallback<Uri[]> filePathCallback,
+                    FileChooserParams fileChooserParams){
+                if(mUploadMessageArray != null){
                     mUploadMessageArray.onReceiveValue(null);
                 }
                 mUploadMessageArray = filePathCallback;
@@ -191,13 +191,38 @@ class WebviewManager {
         webView.clearFormData();
     }
 
-    void openUrl(boolean withJavascript, boolean clearCache, boolean hidden, boolean clearCookies, String userAgent,
-            String url, Map<String, String> headers, boolean withZoom, boolean withLocalStorage, boolean scrollBar,
-            boolean messagingEnabled) {
+    void openUrl(
+            boolean withJavascript,
+            boolean clearCache,
+            boolean hidden,
+            boolean clearCookies,
+            String userAgent,
+            String url,
+            Map<String, String> headers,
+            boolean withZoom,
+            boolean withLocalStorage,
+            boolean scrollBar,
+            boolean supportMultipleWindows,
+            boolean appCacheEnabled,
+            boolean allowFileURLs,
+            boolean messagingEnabled
+    ) {
         webView.getSettings().setJavaScriptEnabled(withJavascript);
         webView.getSettings().setBuiltInZoomControls(withZoom);
         webView.getSettings().setSupportZoom(withZoom);
         webView.getSettings().setDomStorageEnabled(withLocalStorage);
+        webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(supportMultipleWindows);
+
+        webView.getSettings().setSupportMultipleWindows(supportMultipleWindows);
+
+        webView.getSettings().setAppCacheEnabled(appCacheEnabled);
+
+        webView.getSettings().setAllowFileAccessFromFileURLs(allowFileURLs);
+        webView.getSettings().setAllowUniversalAccessFromFileURLs(allowFileURLs);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        }
 
         if (clearCache) {
             clearCache();
@@ -215,7 +240,7 @@ class WebviewManager {
             webView.getSettings().setUserAgentString(userAgent);
         }
 
-        if (!scrollBar) {
+        if(!scrollBar){
             webView.setVerticalScrollBarEnabled(false);
         }
 
@@ -224,11 +249,14 @@ class WebviewManager {
         } else {
             webView.loadUrl(url);
         }
+    }
 
-        if (messagingEnabled) {
-            enableMessaging();
-        }
+    void reloadUrl(String url) {
+        webView.loadUrl(url);
+    }
 
+    if (messagingEnabled) {
+        enableMessaging();
     }
 
     void close(MethodCall call, MethodChannel.Result result) {
@@ -260,28 +288,25 @@ class WebviewManager {
             }
         });
     }
-
     /**
-     * Reloads the Webview.
-     */
+    * Reloads the Webview.
+    */
     void reload(MethodCall call, MethodChannel.Result result) {
         if (webView != null) {
             webView.reload();
         }
     }
-
     /**
-     * Navigates back on the Webview.
-     */
+    * Navigates back on the Webview.
+    */
     void back(MethodCall call, MethodChannel.Result result) {
         if (webView != null && webView.canGoBack()) {
             webView.goBack();
         }
     }
-
     /**
-     * Navigates forward on the Webview.
-     */
+    * Navigates forward on the Webview.
+    */
     void forward(MethodCall call, MethodChannel.Result result) {
         if (webView != null && webView.canGoForward()) {
             webView.goForward();
@@ -291,35 +316,31 @@ class WebviewManager {
     void resize(FrameLayout.LayoutParams params) {
         webView.setLayoutParams(params);
     }
-
     /**
-     * Checks if going back on the Webview is possible.
-     */
+    * Checks if going back on the Webview is possible.
+    */
     boolean canGoBack() {
         return webView.canGoBack();
     }
-
     /**
-     * Checks if going forward on the Webview is possible.
-     */
+    * Checks if going forward on the Webview is possible.
+    */
     boolean canGoForward() {
         return webView.canGoForward();
     }
-
     void hide(MethodCall call, MethodChannel.Result result) {
         if (webView != null) {
             webView.setVisibility(View.INVISIBLE);
         }
     }
-
     void show(MethodCall call, MethodChannel.Result result) {
         if (webView != null) {
             webView.setVisibility(View.VISIBLE);
         }
     }
 
-    void stopLoading(MethodCall call, MethodChannel.Result result) {
-        if (webView != null) {
+    void stopLoading(MethodCall call, MethodChannel.Result result){
+        if (webView != null){
             webView.stopLoading();
         }
     }
