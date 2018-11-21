@@ -25,6 +25,10 @@ import io.flutter.plugin.common.MethodChannel;
 
 import static android.app.Activity.RESULT_OK;
 
+import android.webkit.JavascriptInterface;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by lejard_h on 20/12/2017.
  */
@@ -34,6 +38,7 @@ class WebviewManager {
     private ValueCallback<Uri> mUploadMessage;
     private ValueCallback<Uri[]> mUploadMessageArray;
     private final static int FILECHOOSER_RESULTCODE=1;
+    private static final String CHANNEL_NAME = "flutter_webview_plugin";
 
     @TargetApi(7)
     class ResultHandler {
@@ -244,6 +249,10 @@ class WebviewManager {
             webView.setVerticalScrollBarEnabled(false);
         }
 
+        if (messagingEnabled) {
+            enableMessaging();
+        }
+
         if (headers != null) {
             webView.loadUrl(url, headers);
         } else {
@@ -255,9 +264,6 @@ class WebviewManager {
         webView.loadUrl(url);
     }
 
-    if (messagingEnabled) {
-        enableMessaging();
-    }
 
     void close(MethodCall call, MethodChannel.Result result) {
         if (webView != null) {
