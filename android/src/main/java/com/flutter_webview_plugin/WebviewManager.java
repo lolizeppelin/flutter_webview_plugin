@@ -175,7 +175,35 @@ class WebviewManager {
                 activity.startActivityForResult(chooserIntent, FILECHOOSER_RESULTCODE);
                 return true;
             }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString()
+                if (!TextUtils.isEmpty(url)) {
+                    if (!url.startsWith("http") && !url.startsWith("https")) {
+                        {
+                            //加载手机内置支付
+                            toLoadInnerApp(url);
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+
         });
+    }
+
+    private void toLoadInnerApp(String url) {
+        try {
+            Intent it = new Intent(Intent.ACTION_VIEW);
+            it.setData(Uri.parse(url));
+            startActivity(it);
+        } catch (Exception e) {
+            //这里需要处理 发生异常的情况
+            //可能情况： 手机没有安装支付宝或者微信。或者安装支付宝或者微信但是版本过低
+        }
     }
 
     private void clearCookies() {
