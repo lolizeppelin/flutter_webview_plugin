@@ -29,6 +29,11 @@ import android.webkit.JavascriptInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.text.TextUtils;
+import android.webkit.WebResourceRequest;
+
+
+
 /**
  * Created by lejard_h on 20/12/2017.
  */
@@ -176,9 +181,10 @@ class WebviewManager {
                 return true;
             }
 
-            @Override
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+//            @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String url = request.getUrl().toString()
+                String url = request.getUrl().toString();
                 if (!TextUtils.isEmpty(url)) {
                     if (!url.startsWith("http") && !url.startsWith("https")) {
                         {
@@ -190,6 +196,7 @@ class WebviewManager {
                         return false;
                     }
                 }
+                return false;
             }
 
         });
@@ -199,7 +206,7 @@ class WebviewManager {
         try {
             Intent it = new Intent(Intent.ACTION_VIEW);
             it.setData(Uri.parse(url));
-            startActivity(it);
+            this.activity.startActivity(it);
         } catch (Exception e) {
             //这里需要处理 发生异常的情况
             //可能情况： 手机没有安装支付宝或者微信。或者安装支付宝或者微信但是版本过低
@@ -419,6 +426,7 @@ class WebviewManager {
         webView.addJavascriptInterface(new JsObject(this), CHANNEL_NAME);
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     protected void linkBridge() {
         String script = "(" + "window.originalPostMessage = window.postMessage,"
                 + "window.postMessage = function(data) {" + CHANNEL_NAME + ".postMessage(String(data));" + "}" + ")";
