@@ -2,7 +2,7 @@ package com.flutter_webview_plugin;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
+//import android.util.Log;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.os.Build;
@@ -47,6 +47,7 @@ class WebviewManager {
 
     @TargetApi(7)
     class ResultHandler {
+
         public boolean handleResult(int requestCode, int resultCode, Intent intent){
             boolean handled = false;
             if(Build.VERSION.SDK_INT >= 21){
@@ -138,7 +139,7 @@ class WebviewManager {
             }
 
             // For Android 3.0+
-            public void openFileChooser( ValueCallback uploadMsg, String acceptType ) {
+            public void openFileChooser( ValueCallback<Uri> uploadMsg, String acceptType ) {
                 mUploadMessage = uploadMsg;
                 Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
@@ -206,7 +207,7 @@ class WebviewManager {
         try {
             Intent it = new Intent(Intent.ACTION_VIEW);
             it.setData(Uri.parse(url));
-            this.activity.startActivity(it);
+            activity.startActivity(it);
         } catch (Exception e) {
             //这里需要处理 发生异常的情况
             //可能情况： 手机没有安装支付宝或者微信。或者安装支付宝或者微信但是版本过低
