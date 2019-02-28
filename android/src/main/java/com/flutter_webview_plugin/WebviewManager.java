@@ -405,6 +405,7 @@ class WebviewManager {
         FlutterWebviewPlugin.channel.invokeMethod("onWebviewMessage", _event);
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     public void postMessage(MethodCall call, final MethodChannel.Result result) {
         String message = call.argument("data");
         try {
