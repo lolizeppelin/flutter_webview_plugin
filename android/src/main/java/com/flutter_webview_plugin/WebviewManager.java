@@ -3,7 +3,6 @@ package com.flutter_webview_plugin;
 import android.content.Intent;
 import android.net.Uri;
 //import android.util.Log;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.os.Build;
 import android.view.KeyEvent;
@@ -45,7 +44,6 @@ class WebviewManager {
     private final static int FILECHOOSER_RESULTCODE=1;
     private static final String CHANNEL_NAME = "flutter_webview_plugin";
 
-    @TargetApi(7)
     class ResultHandler {
 
         public boolean handleResult(int requestCode, int resultCode, Intent intent){
@@ -182,7 +180,6 @@ class WebviewManager {
                 return true;
             }
 
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 //            @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
@@ -215,16 +212,24 @@ class WebviewManager {
     }
 
     private void clearCookies() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
-                @Override
-                public void onReceiveValue(Boolean aBoolean) {
 
-                }
-            });
-        } else {
-            CookieManager.getInstance().removeAllCookie();
-        }
+        CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+            @Override
+            public void onReceiveValue(Boolean aBoolean) {
+
+            }
+        });
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+//                @Override
+//                public void onReceiveValue(Boolean aBoolean) {
+//
+//                }
+//            });
+//        } else {
+//            CookieManager.getInstance().removeAllCookie();
+//        }
     }
 
     private void clearCache() {
@@ -261,9 +266,11 @@ class WebviewManager {
         webView.getSettings().setAllowFileAccessFromFileURLs(allowFileURLs);
         webView.getSettings().setAllowUniversalAccessFromFileURLs(allowFileURLs);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+//        }
+
+        webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 
         if (clearCache) {
             clearCache();
@@ -319,7 +326,6 @@ class WebviewManager {
         close(null, null);
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     void eval(MethodCall call, final MethodChannel.Result result) {
         String code = call.argument("code");
 
@@ -406,7 +412,6 @@ class WebviewManager {
         FlutterWebviewPlugin.channel.invokeMethod("onWebviewMessage", _event);
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     public void postMessage(MethodCall call, final MethodChannel.Result result) {
         String message = call.argument("data");
         try {
@@ -428,7 +433,6 @@ class WebviewManager {
         webView.addJavascriptInterface(new JsObject(this), CHANNEL_NAME);
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     protected void linkBridge() {
         String script = "(" + "window.originalPostMessage = window.postMessage,"
                 + "window.postMessage = function(data) {" + CHANNEL_NAME + ".postMessage(String(data));" + "}" + ")";
