@@ -89,7 +89,26 @@ class WebviewManager {
         this.webView = new ObservableWebView(activity);
         this.activity = activity;
         this.resultHandler = new ResultHandler();
-        WebViewClient webViewClient = new BrowserClient();
+        WebViewClient webViewClient = new BrowserClient() {
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                if (!TextUtils.isEmpty(url)) {
+                    if (!url.startsWith("http") && !url.startsWith("https")) {
+                        {
+                            //加载手机内置支付
+                            toLoadInnerApp(url);
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+                return false;
+            }
+        };
+
         webView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -180,22 +199,6 @@ class WebviewManager {
                 return true;
             }
 
-//            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String url = request.getUrl().toString();
-                if (!TextUtils.isEmpty(url)) {
-                    if (!url.startsWith("http") && !url.startsWith("https")) {
-                        {
-                            //加载手机内置支付
-                            toLoadInnerApp(url);
-                            return true;
-                        }
-                    } else {
-                        return false;
-                    }
-                }
-                return false;
-            }
 
         });
     }
