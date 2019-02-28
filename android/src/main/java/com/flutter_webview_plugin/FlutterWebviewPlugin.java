@@ -9,7 +9,7 @@ import android.view.Display;
 import android.widget.FrameLayout;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
-import android.os.Build;
+//import android.os.Build;
 
 import java.util.Map;
 
@@ -225,16 +225,24 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
     }
 
     private void cleanCookies(MethodCall call, final MethodChannel.Result result) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
-                @Override
-                public void onReceiveValue(Boolean aBoolean) {
+        CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+            @Override
+            public void onReceiveValue(Boolean aBoolean) {
 
-                }
-            });
-        } else {
-            CookieManager.getInstance().removeAllCookie();
-        }
+            }
+        });
+
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+//                @Override
+//                public void onReceiveValue(Boolean aBoolean) {
+//
+//                }
+//            });
+//        } else {
+//            CookieManager.getInstance().removeAllCookie();
+//        }
         result.success(null);
     }
 
